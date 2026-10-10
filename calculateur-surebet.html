@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculateur de surebet</title>
+<style>
+:root {
+  --bg: #edf0ed;
+  --card: #ffffff;
+  --ink: #15211a;
+  --muted: #5b6a61;
+  --line: #d8dfd9;
+  --field: #edf0ed;
+  --ok: #17743a;
+  --ok-bg: #dcf0e2;
+  --mid: #8a5a00;
+  --mid-bg: #f5ebcf;
+  --bad: #a8261d;
+  --bad-bg: #f6dddb;
+  --focus: #17743a;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1612;
+    --card: #18221c;
+    --ink: #e8efe9;
+    --muted: #9fb0a5;
+    --line: #2a382f;
+    --field: #0f1612;
+    --ok: #5fd08a;
+    --ok-bg: #153523;
+    --mid: #e9b94e;
+    --mid-bg: #3a2e12;
+    --bad: #ff8a80;
+    --bad-bg: #3d1b18;
+    --focus: #5fd08a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1612;
+  --card: #18221c;
+  --ink: #e8efe9;
+  --muted: #9fb0a5;
+  --line: #2a382f;
+  --field: #0f1612;
+  --ok: #5fd08a;
+  --ok-bg: #153523;
+  --mid: #e9b94e;
+  --mid-bg: #3a2e12;
+  --bad: #ff8a80;
+  --bad-bg: #3d1b18;
+  --focus: #5fd08a;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+main { max-width: 560px; margin: 0 auto; padding: 22px 16px 40px; }
+h1 { font-size: 26px; line-height: 1.15; margin: 0 0 4px; letter-spacing: -0.01em; }
+.sub { margin: 0; color: var(--muted); font-size: 16px; }
+.demo { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--mid); background: var(--mid-bg); padding: 3px 10px; border-radius: 99px; }
+
+.banner {
+  margin: 20px 0 14px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+}
+.banner.ok { background: var(--ok-bg); color: var(--ok); }
+.banner.mid { background: var(--mid-bg); color: var(--mid); }
+.banner.bad { background: var(--bad-bg); color: var(--bad); }
+.banner .lab { display: block; font-size: 14px; font-weight: 600; }
+.banner .statut { font-size: 20px; font-weight: 700; }
+.banner .big { font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.card-head .nom { font-size: 19px; font-weight: 700; overflow-wrap: anywhere; }
+.card-head .book { font-size: 16px; color: var(--muted); white-space: nowrap; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.champ label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.champ input {
+  width: 100%;
+  font: inherit;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  padding: 12px 14px;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.champ input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.champ input.invalide { border-color: var(--bad); }
+.retour { margin: 12px 0 0; color: var(--muted); font-size: 16px; }
+.retour b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.totaux { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
+.tot { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 8px; text-align: center; }
+.tot span { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+.tot b { display: block; margin-top: 4px; font-size: 18px; font-variant-numeric: tabular-nums; }
+.tot b.ok { color: var(--ok); }
+.tot b.bad { color: var(--bad); }
+.note { margin: 18px 4px 0; font-size: 13px; color: var(--muted); }
+.erreur { margin: 0 0 12px; padding: 12px 14px; border-radius: 12px; background: var(--bad-bg); color: var(--bad); font-size: 15px; }
+@media (max-width: 380px) {
+  .banner .big { font-size: 38px; }
+  .tot b { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="titre">Résultat du match</h1>
+    <p class="sub" id="match"></p>
+    <span class="demo" id="demo" hidden>Exemple : ouvre le calculateur depuis une alerte pour voir ses cotes</span>
+  </header>
+
+  <section class="banner ok" id="banner" aria-live="polite">
+    <div>
+      <span class="lab">TRJ</span>
+      <span class="statut" id="statut">Surebet</span>
+    </div>
+    <div class="big" id="trj">–</div>
+  </section>
+
+  <p class="erreur" id="erreur" hidden>Saisis des cotes supérieures à 1 pour calculer les mises.</p>
+
+  <section id="cartes"></section>
+
+  <section class="totaux" aria-live="polite">
+    <div class="tot"><span>Mise totale</span><b id="total">–</b></div>
+    <div class="tot"><span>Retour min.</span><b id="retourMin">–</b></div>
+    <div class="tot"><span>Gain min.</span><b id="gain">–</b></div>
+  </section>
+
+  <p class="note">Modifie une mise ou une cote : les autres mises se recalculent pour que le retour soit le même quelle que soit l'issue. Vérifie toujours la cote sur le site du bookmaker avant de miser.</p>
+</main>
+
+<script>
+(function () {
+  var params = new URLSearchParams(location.search || location.hash.replace(/^#\??/, ''));
+
+  function num(s) {
+    var v = parseFloat(String(s).replace(/\s/g, '').replace(',', '.'));
+    return isNaN(v) ? NaN : v;
+  }
+  function fmt(x) {
+    return x.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function toInput(x) { return x.toFixed(2).replace('.', ','); }
+
+  // Issues : ?o=Nom~cote~Bookmaker|Nom~cote~Bookmaker
+  var outcomes = [];
+  var raw = params.get('o');
+  if (raw) {
+    outcomes = raw.split('|').map(function (p) {
+      var a = p.split('~');
+      return { name: (a[0] || '').trim(), cote: num(a[1]), book: (a[2] || '').trim() };
+    }).filter(function (o) { return o.name && o.cote > 1; }).slice(0, 6);
+  }
+  var demo = outcomes.length < 2;
+  if (demo) {
+    outcomes = [
+      { name: 'Équipe A', cote: 2.10, book: 'Betclic' },
+      { name: 'Équipe B', cote: 2.05, book: 'Winamax' }
+    ];
+  }
+
+  var marche = params.get('k') || 'Résultat du match';
+  var matchNom = params.get('m') || '';
+  var date = params.get('d') || '';
+  document.getElementById('titre').textContent = marche;
+  document.getElementById('match').textContent = [matchNom, date].filter(Boolean).join(' · ');
+  document.getElementById('demo').hidden = !demo;
+  document.title = 'Calculateur · ' + (matchNom || marche);
+
+  var anchor = 0;
+  var anchorStake = 100;
+  var stakes = [];
+  var refs = [];
+
+  var cartes = document.getElementById('cartes');
+  outcomes.forEach(function (o, i) {
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var head = document.createElement('div');
+    head.className = 'card-head';
+    var nom = document.createElement('span');
+    nom.className = 'nom';
+    nom.textContent = o.name;
+    var book = document.createElement('span');
+    book.className = 'book';
+    book.textContent = o.book;
+    head.appendChild(nom);
+    head.appendChild(book);
+
+    var grid = document.createElement('div');
+    grid.className = 'grid';
+
+    function champ(id, label) {
+      var wrap = document.createElement('div');
+      wrap.className = 'champ';
+      var l = document.createElement('label');
+      l.htmlFor = id;
+      l.textContent = label;
+      var input = document.createElement('input');
+      input.id = id;
+      input.type = 'text';
+      input.inputMode = 'decimal';
+      input.autocomplete = 'off';
+      wrap.appendChild(l);
+      wrap.appendChild(input);
+      grid.appendChild(wrap);
+      return input;
+    }
+    var coteIn = champ('cote' + i, 'Cote');
+    var miseIn = champ('mise' + i, 'Mise (€)');
+    coteIn.value = toInput(o.cote);
+
+    var retour = document.createElement('p');
+    retour.className = 'retour';
+    retour.appendChild(document.createTextNode('Retour si gagnant : '));
+    var retourVal = document.createElement('b');
+    retour.appendChild(retourVal);
+
+    card.appendChild(head);
+    card.appendChild(grid);
+    card.appendChild(retour);
+    cartes.appendChild(card);
+
+    coteIn.addEventListener('input', function () {
+      o.cote = num(coteIn.value);
+      update(-1);
+    });
+    miseIn.addEventListener('input', function () {
+      var v = num(miseIn.value);
+      if (v > 0) { anchor = i; anchorStake = v; }
+      update(i);
+    });
+    miseIn.addEventListener('blur', function () {
+      if (stakes[i] > 0) miseIn.value = toInput(stakes[i]);
+    });
+
+    refs.push({ cote: coteIn, mise: miseIn, retour: retourVal });
+  });
+
+  var elBanner = document.getElementById('banner');
+  var elStatut = document.getElementById('statut');
+  var elTrj = document.getElementById('trj');
+  var elErreur = document.getElementById('erreur');
+  var elTotal = document.getElementById('total');
+  var elRetourMin = document.getElementById('retourMin');
+  var elGain = document.getElementById('gain');
+
+  function update(edited) {
+    var valid = outcomes.every(function (o) { return o.cote > 1; });
+    outcomes.forEach(function (o, i) {
+      refs[i].cote.classList.toggle('invalide', !(o.cote > 1));
+    });
+    elErreur.hidden = valid;
+
+    if (!valid) {
+      elTrj.textContent = '–';
+      elStatut.textContent = 'Cotes à corriger';
+      elBanner.className = 'banner bad';
+      elTotal.textContent = elRetourMin.textContent = elGain.textContent = '–';
+      elGain.className = '';
+      refs.forEach(function (r) { r.retour.textContent = '–'; });
+      return;
+    }
+
+    var R = anchorStake * outcomes[anchor].cote;
+    stakes = outcomes.map(function (o, i) {
+      return i === anchor ? anchorStake : Math.round((R / o.cote) * 100) / 100;
+    });
+
+    var trj = 100 / outcomes.reduce(function (s, o) { return s + 1 / o.cote; }, 0);
+    elTrj.textContent = fmt(trj) + ' %';
+    if (trj >= 100) { elStatut.textContent = 'Surebet'; elBanner.className = 'banner ok'; }
+    else if (trj >= 95) { elStatut.textContent = 'Perte limitée'; elBanner.className = 'banner mid'; }
+    else { elStatut.textContent = 'Pas de surebet'; elBanner.className = 'banner bad'; }
+
+    var total = 0;
+    var minRet = Infinity;
+    stakes.forEach(function (s, i) {
+      var ret = s * outcomes[i].cote;
+      total += s;
+      if (ret < minRet) minRet = ret;
+      if (i !== edited) refs[i].mise.value = toInput(s);
+      refs[i].retour.textContent = fmt(ret) + ' €';
+    });
+    var gain = minRet - total;
+    elTotal.textContent = fmt(total) + ' €';
+    elRetourMin.textContent = fmt(minRet) + ' €';
+    elGain.textContent = (gain >= 0 ? '+' : '−') + fmt(Math.abs(gain)) + ' €';
+    elGain.className = gain >= 0 ? 'ok' : 'bad';
+  }
+
+  update(-1);
+})();
+</script>
+</body>
+</html>
